@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>
+        Youtube_test
+    </title>
+</head>
+<body>
+<!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+<div id="player"></div>
+
+<script>
+      // 2. This code loads the IFrame Player API code asynchronously.
+      var tag = document.createElement('script');
+
+      tag.src = "https://www.youtube.com/iframe_api";
+      var firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+      // 3. This function creates an <iframe> (and YouTube player)
+      //    after the API code downloads.
+      var player;
+      var duration=0;
+      var bufferingCount=0;
+      var totalBufferingTime=0;
+      var startBufferingTime=0;
+        var currentTime=0;
+        var startPlayingTime=0;
+      var totalPlayingTime=0;
+      var otherStatesTime=0;
+
+      function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+          height: '390',
+          width: '640',
+          videoId: 'HngTaeW9KVs',
+          playerVars: {
+          'autoplay': 1,
+          'controls': 0,
+            'playsinline': 1
+            },
+          events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange,
+            'onError':onErrorObtained
+
+        }
+
+
+        });
+      }
+
+            //'onPlaybackQualityChange': onPlaybackQualityChange,
+            //'onPlaybackRateChange':onPlaybackRateChange
+
+      // 4. The API will call this function when the video player is ready.
+      function onPlayerReady(event) {
+      console.log("Reached function");
+      event.target.setVolume(100);
+       event.target.setPlaybackQuality('hd720');
+      event.target.playVideo();
+      dur= event.target.getDuration();
+      console.log("Duration is "+dur);
+
+       }
+       function onErrorObtained(event)
+       {
+       console.log(event.data);
+      //   Android.onTimeOutOccured(true);
+         }
+
+       function onPlaybackQualityChange(event)
+       {
+//playback quality
+       console.log(event.data);
+       }
+
+       function onPlaybackRateChange(event)
+       {
+         console.log(event.data);
+        }
+
+      // 5. The API calls this function when the player's state changes.
+      //    The function indicates that when playing a video (state=1),
+      //    the player should play for 10 seconds and then stop.
+      var done = false;
+
+      function onPlayerStateChange(event) {
+      console.log("Reached onPlayerState function . State is "+event.data);
+      currentTime = Math.floor(event.target.getCurrentTime());
+      console.log("Current time of player : "+currentTime);
+        if(event.data == YT.PlayerState.PLAYING)
+        {
+        startPlayingTime=getTimeStamp();
+         Android.onPlayerStateChanged("Playing");
+        if(!done)
+        {
+        console.log("Set TimeOut");
+        setTimeout(stopVideo, 25000);
+          done = true;
+          Android.onPlayerStateChanged("Video has started");
+        }
+        var currentTime=getTimeStamp();
+        totalBufferingTime = totalBufferingTime + (currentTime - startBufferingTime);
+
+		console.log("total buffering time is "+totalBufferingTime);
+
+        }
+        else
+        {
+   var currentTime1=getTimeStamp();
+        console.log("start playing time is "+startPlayingTime);
+        console.log("current time1 is "+currentTime1);
+        if(startPlayingTime>0 && totalPlayingTime<=event.target.getDuration())
+        totalPlayingTime=totalPlayingTime+(currentTime1-startPlayingTime);
+        var playTimeInSeconds=totalPlayingTime/1000;
+console.log("total playing time is "+totalPlayingTime);
+console.log("total playing time in seconds is "+playTimeInSeconds);
+Android.sendPlayingTime(totalPlayingTime);
+
+       // otherStatesTime=getTimeStamp();
+        if (event.data == YT.PlayerState.BUFFERING) {
+
+             bufferingCount += 1;
+             startBufferingTime=getTimeStamp();
+              Android.onPlayerStateChanged("Buffering");
+
+            console.log("buffering count is "+bufferingCount);
+			console.log("buffering start time is "+startBufferingTime);
+			//console.log("play time is "+totalPlayingTime);
+            }
+        }
+        }
+
+
+
+
+
+      function getTimeStamp() {
+  return Math.floor(Date.now())
+}
+      function stopVideo() {
+      console.log("Reached stop function");
+        player.stopVideo();
+
+console.log("total playing time finally is "+totalPlayingTime);
+        Android.onObtainResult(dur, bufferingCount,totalBufferingTime,totalPlayingTime,startPlayingTime);
+      }
+    </script>
+</body>
+</html>

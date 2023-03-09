@@ -1,0 +1,2 @@
+include ':app', ':mview_sdk2'
+rootProject.name='Mview_sdk'
